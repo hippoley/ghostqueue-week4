@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GhostQueue | Task Triage Lab</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><main>
+<header><div class="eyebrow">GHOSTQUEUE / LOCAL INFERENCE LAB</div><h1>When a task disappears,<br><em>does it really die?</em></h1><p>Explore interrupted AI tasks with a real Python classifier and deterministic safety boundaries.</p></header>
+<section class="workspace"><div class="panel"><h2>01 / Choose an event</h2><div id="scenarios" class="scenarios" aria-label="Example scenarios"></div><label for="message">Event description</label><textarea id="message" rows="4" maxlength="10000"></textarea>
+<div class="flags"><label><input id="trusted" type="checkbox" checked> Trusted source</label><label><input id="sideEffect" type="checkbox"> External side effect</label><label><input id="approval" type="checkbox"> Requires approval</label></div><button id="analyze">Analyze event <span>↗</span></button><p id="error" role="alert"></p></div>
+<div class="panel result"><h2>02 / Decision trace</h2><div id="empty" class="empty">Select an event and press Analyze to run real inference.</div><div id="output" hidden><div class="overline">FINAL SUGGESTION</div><div id="state" class="state"></div><p id="reason"></p><div class="metrics"><div><span>MODEL PREDICTION</span><strong id="model"></strong></div><div><span>CONFIDENCE</span><strong id="confidence"></strong></div><div><span>EXECUTED ACTIONS</span><strong id="executed">0</strong></div></div><h3>Model alternatives</h3><div id="alternatives"></div><div class="notice">Advisory only · No queue operations, retries, payments, or external actions.</div></div></div></section>
+<footer><span>Real Python inference · Synthetic examples · Localhost only</span><a href="https://github.com/hippoley/ghostqueue-week4">Source & reproducibility ↗</a></footer>
+</main><script src="/static/app.js" defer></script></body></html>
