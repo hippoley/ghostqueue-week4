@@ -45,7 +45,7 @@ def triage(event):
     for flag in ('trusted', 'external_side_effect', 'requires_approval'):
         if flag in event and type(event[flag]) is not bool:
             raise ValueError(f'event.{flag} must be a boolean')
-    if 'id' in event and (type(event['id']) not in (str, int)):
+    if 'id' in event and (type(event['id']) not in (str, int) or (type(event['id']) is str and not event['id'].strip())):
         raise ValueError('event.id must be a string or integer')
     text=event['message']
     result=predict(text)
