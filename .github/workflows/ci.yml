@@ -1,26 +1,41 @@
-name: GhostQueue CI
+name: GhostQueue reproducibility
 on:
   push:
   pull_request:
+permissions:
+  contents: read
 jobs:
-  test:
+  reproduce:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate release completeness
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          required=['ghostqueue/core.py','ghostqueue/weights.json','ghostqueue/__main__.py','tests/test_core.py','evaluate.py','evaluation/holdout_results.json']
-          missing=[p for p in required if not Path(p).is_file()]
-          if missing:
-              print('INCOMPLETE PUBLIC RELEASE: '+', '.join(missing))
-              raise SystemExit(1)
-          PY
+          cache: 'pip'
+          cache-dependency-path: requirements-train.txt
+      - name: Install training dependencies
+        run: python -m pip install -r requirements-train.txt
+      - name: Regenerate open weights
+        run: python train.py
       - name: Unit tests
         run: python -m unittest discover -s tests -v
-      - name: CLI smoke test
+      - name: Reproduce synthetic evaluation
+        run: python evaluate.py
+      - name: Verify transparent evaluation numbers
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('evaluation/holdout_results.json'))
+          assert r['model']['correct']==21 and r['model']['total']==24, r['model']
+          assert r['keyword_baseline']['correct']==23 and r['keyword_baseline']['total']==24, r['keyword_baseline']
+          assert len(r['policy_checks'])==5 and all(c['passed'] for c in r['policy_checks'])
+          PY
+      - name: CLI demo
         run: python -m ghostqueue examples/events.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ghostqueue-weights-and-evidence
+          path: |
+            ghostqueue/weights.json
+            evaluation/holdout_results.json
