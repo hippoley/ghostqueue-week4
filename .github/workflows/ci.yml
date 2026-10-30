@@ -1,0 +1,26 @@
+name: GhostQueue CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate release completeness
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          required=['ghostqueue/core.py','ghostqueue/weights.json','ghostqueue/__main__.py','tests/test_core.py','evaluate.py','evaluation/holdout_results.json']
+          missing=[p for p in required if not Path(p).is_file()]
+          if missing:
+              print('INCOMPLETE PUBLIC RELEASE: '+', '.join(missing))
+              raise SystemExit(1)
+          PY
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: CLI smoke test
+        run: python -m ghostqueue examples/events.json
