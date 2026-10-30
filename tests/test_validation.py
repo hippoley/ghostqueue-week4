@@ -39,3 +39,11 @@ class ValidationTests(unittest.TestCase):
         result=triage({'id':'case','message':'temporary network timeout','trusted':False})
         self.assertEqual(result['suggested_state'],'quarantine')
         self.assertEqual(result['executed_actions'],0)
+
+    def test_boolean_event_id_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'event.id'):
+            triage({'message':'temporary network timeout','id':True})
+
+    def test_blank_event_id_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'event.id'):
+            triage({'message':'temporary network timeout','id':'   '})
