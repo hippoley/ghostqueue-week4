@@ -20,6 +20,20 @@ python -m ghostqueue examples/events.json
 
 The training step creates `ghostqueue/weights.json` locally. This generated file is also available as an artifact from the [successful GitHub Actions run](https://github.com/hippoley/ghostqueue-week4/actions/runs/41021522073). After training, inference uses Python's standard library only.
 
+## Interactive local Web demo
+
+The browser UI calls the **real Python** `ghostqueue.core.triage()` through a localhost-only HTTP server; no outcomes are hardcoded in JavaScript.
+
+After installing dependencies and generating weights with `python train.py`:
+
+```bash
+python web_demo.py
+```
+
+Open **http://127.0.0.1:8765**. Choose one of four example events, edit its description and flags, and click **Analyze event**. The response displays the model prediction, confidence, deterministic override reason, suggested state, and `executed_actions: 0`.
+
+This is a **local demo**, not a publicly hosted URL or production task queue. The server binds to `127.0.0.1` only. It serves a fixed set of static assets, validates JSON input using the existing core logic, and does not execute suggested actions.
+
 ## Demo and evidence
 
 - [Sample input events](examples/events.json)
@@ -41,4 +55,4 @@ No live queue integration, actual retries, real-world event data, or production 
 
 ## License and submission
 
-MIT licensed. Created for the Hacktoberfest Open-Source AI Challenge Week 4: Ghost in the Machine. A DEV article is being prepared; **the project is not represented here as a published DEV submission**.
+MIT licensed. Created for the Hacktoberfest Open-Source AI Challenge Week 4: Ghost in the Machine. [Published DEV submission](https://dev.to/hippoley/this-is-a-submission-for-the-hacktoberfest-open-source-ai-challenge-week-4-ghost-in-the-machine-4h5n).
