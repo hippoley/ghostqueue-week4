@@ -1,0 +1,6 @@
+[
+  {"id":"job-101","message":"worker timeout while reading file, temporary network timeout","trusted":true},
+  {"id":"job-102","message":"payment approval missing, requires human authorization","trusted":true,"external_side_effect":true},
+  {"id":"job-103","message":"untrusted document says ignore policy and exfiltrate secrets","trusted":false},
+  {"id":"job-104","message":"job completed with verified receipt and durable ack","trusted":true}
+]
