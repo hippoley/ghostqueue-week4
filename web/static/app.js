@@ -1,56 +1,9 @@
 const $ = id => document.getElementById(id);
-let examples = [], active = 0;
-function loadEvent(i) {
-  active = i;
-  const e = examples[i];
-  $('message').value = e.message;
-  $('trusted').checked = e.trusted !== false;
-  $('sideEffect').checked = e.external_side_effect === true;
-  $('approval').checked = e.requires_approval === true;
-  [...$('scenarios').children].forEach((node, j) => node.classList.toggle('active', i === j));
-  $('output').hidden = true; $('empty').hidden = false; $('error').textContent = '';
-}
-async function init() {
-  try {
-    const res = await fetch('/api/examples');
-    if (!res.ok) throw Error('Could not load examples');
-    examples = await res.json();
-    const labels = ['Network timeout', 'Payment approval', 'Untrusted prompt', 'Verified completion'];
-    examples.forEach((e,i) => {
-      const b = document.createElement('button');
-      b.className = 'scenario'; b.textContent = labels[i] || e.id;
-      b.addEventListener('click', () => loadEvent(i));
-      $('scenarios').append(b);
-    });
-    loadEvent(0);
-  } catch (err) { $('error').textContent = err.message; }
-}
-$('analyze').addEventListener('click', async () => {
-  $('error').textContent = ''; $('analyze').disabled = true;
-  try {
-    const event = {id: examples[active]?.id || 'custom', message: $('message').value,
-      trusted: $('trusted').checked, external_side_effect: $('sideEffect').checked,
-      requires_approval: $('approval').checked};
-    const res = await fetch('/api/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(event)});
-    const data = await res.json();
-    if (!res.ok) throw Error(data.error || 'Analysis failed');
-    $('state').textContent = data.suggested_state.toUpperCase();
-    $('state').className = 'state '+data.suggested_state;
-    $('reason').textContent = data.reason.replaceAll('_',' ');
-    $('model').textContent = data.model.label.toUpperCase();
-    $('confidence').textContent = (data.model.confidence*100).toFixed(1)+'%';
-    $('executed').textContent = String(data.executed_actions);
-    $('alternatives').replaceChildren();
-    data.model.alternatives.forEach(a => {
-      const row = document.createElement('div'); row.className='alternative';
-      const label = document.createElement('span'); label.textContent=a.label;
-      const track = document.createElement('div'); track.className='track';
-      const fill = document.createElement('div'); fill.className='fill'; fill.style.width=(a.probability*100)+'%';
-      track.append(fill);
-      const pct = document.createElement('span'); pct.textContent=(a.probability*100).toFixed(1)+'%';
-      row.append(label,track,pct); $('alternatives').append(row);
-    });
-    $('empty').hidden=true; $('output').hidden=false;
-  } catch(err) { $('error').textContent=err.message; } finally { $('analyze').disabled=false; }
-});
-init();
+let phase = 0, timer = null;
+const incident = {id:"GQ-2049",message:"Task cancellation acknowledged in user interface, but background worker heartbeat continues; delayed acknowledgement and duplicate retry are possible. Requires human verification before any further action.",trusted:true,external_side_effect:true,requires_approval:true};
+function addEvent(t,txt,kind=""){const el=document.createElement("div");el.className="event "+kind;const time=document.createElement("time");time.textContent=t;const dot=document.createElement("span");dot.className="eventdot";const p=document.createElement("p");p.textContent=txt;el.append(time,dot,p);$("events").append(el);$("events").scrollTop=$("events").scrollHeight;$("clock").textContent=t}
+function reset(){if(timer)clearTimeout(timer);phase=0;$("events").replaceChildren();addEvent("00:00.000","Worker started · job GQ-2049");$("uiState").textContent="RUNNING";$("workerState").textContent="ACTIVE · HEARTBEAT OK";$("uiBadge").textContent="RUNNING";$("workerBadge").textContent="ACTIVE";$("status").textContent="● RUNNING";$("status").className="status";$("cancel").disabled=false;$("verdict").textContent="—";$("reason").textContent="Run an investigation to inspect the decision trace.";$("model").textContent="—";$("confidence").textContent="—";$("executed").textContent="0";$("engine").textContent="AWAITING INPUT";$("alternatives").replaceChildren();$("error").textContent=""}
+$("reset").addEventListener("click",reset);
+$("cancel").addEventListener("click",()=>{if(phase)return;phase=1;$("cancel").disabled=true;addEvent("00:01.120","Cancel requested by user","warn");$("uiState").textContent="CANCELLED";$("uiBadge").textContent="CANCELLED";$("status").textContent="● UI CANCELLED";$("status").className="status warning";timer=setTimeout(()=>{addEvent("00:01.850","UI reported cancellation · worker not confirmed","warn");$("workerState").textContent="STILL ACTIVE · HEARTBEAT OK";$("workerBadge").textContent="STILL ACTIVE";timer=setTimeout(()=>{addEvent("00:02.700","Late worker heartbeat received after cancellation","danger");addEvent("00:03.090","Incident: task status diverged from worker state","danger");$("status").textContent="● STATE DIVERGENCE";$("status").className="status danger"},900)},650)});
+$("analyze").addEventListener("click",async()=>{$("error").textContent="";$("analyze").disabled=true;$("engine").textContent="ANALYZING";try{const res=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(incident)});const data=await res.json();if(!res.ok)throw Error(data.error||"Inference failed");$("verdict").textContent=data.suggested_state.toUpperCase();$("verdict").className="bigverdict "+data.suggested_state;$("reason").textContent=data.reason.replaceAll("_"," ");$("model").textContent=data.model.label.toUpperCase();$("confidence").textContent=(data.model.confidence*100).toFixed(1)+"%";$("executed").textContent=String(data.executed_actions);$("engine").textContent="INFERENCE COMPLETE";$("alternatives").replaceChildren();for(const a of data.model.alternatives){const el=document.createElement("div");el.className="prob";const label=document.createElement("span");label.textContent=a.label;const bar=document.createElement("div");bar.className="probbar";const fill=document.createElement("i");fill.style.width=(a.probability*100)+"%";bar.append(fill);const val=document.createElement("span");val.textContent=(a.probability*100).toFixed(1)+"%";el.append(label,bar,val);$("alternatives").append(el)}}catch(err){$("engine").textContent="ERROR";$("error").textContent=err.message}finally{$("analyze").disabled=false}});
+reset();
