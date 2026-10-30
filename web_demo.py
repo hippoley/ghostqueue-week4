@@ -22,6 +22,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
             self._send(200, HTML, "text/html; charset=utf-8")
+        elif self.path in ("/static/app.js", "/static/style.css"):
+            name = self.path.rsplit("/", 1)[-1]
+            mime = "text/javascript" if name.endswith(".js") else "text/css"
+            self._send(200, (ROOT / "web" / "static" / name).read_bytes(), mime + "; charset=utf-8")
         elif self.path == "/api/examples":
             self._send(200, EXAMPLES, "application/json")
         else:
