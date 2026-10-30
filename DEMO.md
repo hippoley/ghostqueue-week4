@@ -1,3 +1,29 @@
+# 30-second judge walkthrough
+
+**The ghost:** a task can disappear from the interface while its underlying execution state is uncertain.
+
+**The experiment:** GhostQueue reads four synthetic event descriptions and suggests `retry`, `review`, `quarantine`, or `complete`. A local TF-IDF + logistic-regression classifier proposes a label; deterministic rules override unsafe suggestions. It does not control a real queue or execute actions.
+
+**Try it in a fresh clone:**
+
+```bash
+python -m pip install -r requirements-train.txt
+python train.py
+python -m ghostqueue examples/events.json
+```
+
+**Look for these two invariants in the JSONL output:**
+
+- Event `job-102` has `external_side_effect: true` and must be recommended for **review**.
+- Event `job-103` has `trusted: false` and must be recommended for **quarantine**.
+- Every event must report `executed_actions: 0`.
+
+**What actually ran?** [A successful GitHub Actions run](https://github.com/hippoley/ghostqueue-week4/actions/runs/41021522073) independently performed model training, unit tests, evaluation, and the CLI smoke test on GitHub-hosted infrastructure.
+
+**What did we learn?** On 24 synthetic holdout examples, the AI classifier scored 21/24 (87.5%), while a keyword baseline scored 23/24 (95.83%). The baseline won. This is a small synthetic experiment, not a real-world performance claim.
+
+---
+
 # GhostQueue — reproducible demo
 
 ## Quick start
