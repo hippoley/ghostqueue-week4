@@ -37,6 +37,16 @@ class WebDemoTests(unittest.TestCase):
             self.assertIn(marker, data)
             self.assertIn("default-src 'self'", csp)
 
+    def test_evidence_export_contract(self):
+        status, html, _ = self.request("GET", "/")
+        self.assertEqual(status, 200)
+        self.assertIn(b'id="export"', html)
+        status, js, _ = self.request("GET", "/static/app.js")
+        self.assertEqual(status, 200)
+        self.assertIn(b'ghostqueue-demo-evidence-v1', js)
+        self.assertIn(b'URL.createObjectURL', js)
+        self.assertIn(b'requestRevision!==revision', js)
+
     def test_no_arbitrary_files(self):
         for path in ["/ghostqueue/core.py", "/static/../train.py", "/api/private"]:
             status, _, _ = self.request("GET", path)
