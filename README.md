@@ -30,7 +30,7 @@ After installing dependencies and generating weights with `python train.py`:
 python web_demo.py
 ```
 
-Open **http://127.0.0.1:8765**. Click **Cancel Task** to play a clearly labeled synthetic cancellation/late-heartbeat incident, then click **Investigate Incident** to call the actual Python classifier. The result displays model prediction, confidence, deterministic override reason, suggested state, and `executed_actions: 0`. Click **Reset Scenario** to replay. The incident timeline is simulated; inference is real.
+Open **http://127.0.0.1:8765**. Click **Cancel Task** to play a clearly labeled synthetic cancellation/late-heartbeat incident, then click **Investigate Incident** to call the actual Python classifier. The result displays model prediction, confidence, deterministic override reason, suggested state, and `executed_actions: 0`. Click **Reset Scenario** to replay. After a successful investigation, click **Export Evidence** to download a JSON snapshot containing the synthetic input event, actual Python triage output, deterministic policy reason, and `executed_actions: 0`. The export is generated locally in the browser; it is not cryptographically signed or independently attested. The incident timeline is simulated; inference is real.
 
 This is a **local demo**, not a publicly hosted URL or production task queue. The server binds to `127.0.0.1` only. It serves a fixed set of static assets, validates JSON input using the existing core logic, and does not execute suggested actions. HTTP integration tests live in `tests/test_web_demo.py` and run in CI.
 
